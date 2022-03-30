@@ -1,0 +1,11 @@
+name: Hello
+version: '${project.version}'
+main: me.test.plugin.hello.Hello
+api-version: 1.18
+commands:
+  fly:
+    description: Fly
+    usage: /fly
+  setspawn:
+    description: Setspawn
+    usage: /setspawn

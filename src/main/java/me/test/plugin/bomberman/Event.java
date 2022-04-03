@@ -1,4 +1,4 @@
-package me.test.plugin.hello;
+package me.test.plugin.bomberman;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -27,27 +27,24 @@ public class Event implements Listener {
     public void fireDamage(EntityDamageEvent e) {
         if (e.getEntity() instanceof Player) {
             if (e.getCause().equals(EntityDamageEvent.DamageCause.FIRE) || e.getCause().equals(EntityDamageEvent.DamageCause.FIRE_TICK)) {
-
                 Player p = (Player) e.getEntity();
                 Location loc = p.getLocation();
-
                 Player killer = getKiller(loc);
-
-                p.sendMessage("Tué par " + killer.getName());
+                p.sendMessage(ChatColor.RED + "Vous avez été tué par " + ChatColor.BOLD + killer.getName());
             }
         }
     }
 
     private Player getKiller(Location location) {
-        AtomicReference<Player> p = null;
+        AtomicReference<Player> playerKiller = new AtomicReference<>();
 
         allTNTFire.forEach((tntGame) -> tntGame.getBlocks().forEach((fire) -> {
             if (fire.getBlockX() == location.getBlockX() && fire.getBlockZ() ==  location.getBlockZ()) {
-                p.set(tntGame.getCreator());
+                playerKiller.set(tntGame.getCreator());
             }
         }));
 
-        return p.get();
+        return playerKiller.get();
     }
 
     @EventHandler
@@ -159,11 +156,11 @@ public class Event implements Listener {
 
                 this.time--;
             }
-        }.runTaskTimer(Hello.getPlugin(), 0L, 1L);
+        }.runTaskTimer(Main.getPlugin(), 0L, 1L);
     }
 
     private void clearFire(TntGame fire) {
-        Hello.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(Hello.getPlugin(), () ->
+        Main.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(Main.getPlugin(), () ->
             fire.getBlocks().forEach((currentFireBLock) -> {
 
                 if (!isOtherBomb(currentFireBLock)) {
@@ -211,7 +208,6 @@ public class Event implements Listener {
         }
 
         block.setType(Material.FIRE);
-
         return true;
     }
 
@@ -230,18 +226,18 @@ public class Event implements Listener {
             Location blockLoc = event.getClickedBlock().getLocation();
             PersistentDataContainer container = player.getWorld().getPersistentDataContainer();
 
-            int b1X = container.has(new NamespacedKey(Hello.getPlugin(), "b1X"), PersistentDataType.INTEGER) ?
-                    container.get(new NamespacedKey(Hello.getPlugin(), "b1X"), PersistentDataType.INTEGER) : 0;
-            int b1Y = container.has(new NamespacedKey(Hello.getPlugin(), "b1Y"), PersistentDataType.INTEGER) ?
-                    container.get(new NamespacedKey(Hello.getPlugin(), "b1Y"), PersistentDataType.INTEGER): 0 ;
-            int b1Z = container.has(new NamespacedKey(Hello.getPlugin(), "b1Z"), PersistentDataType.INTEGER) ?
-                    container.get(new NamespacedKey(Hello.getPlugin(), "b1Z"), PersistentDataType.INTEGER) : 0;
-            int b2X = container.has(new NamespacedKey(Hello.getPlugin(), "b2X"), PersistentDataType.INTEGER) ?
-                    container.get(new NamespacedKey(Hello.getPlugin(), "b2X"), PersistentDataType.INTEGER) : 0;
-            int b2Y = container.has(new NamespacedKey(Hello.getPlugin(), "b2Y"), PersistentDataType.INTEGER) ?
-                    container.get(new NamespacedKey(Hello.getPlugin(), "b2Y"), PersistentDataType.INTEGER) : 0;
-            int b2Z = container.has(new NamespacedKey(Hello.getPlugin(), "b2Z"), PersistentDataType.INTEGER) ?
-                    container.get(new NamespacedKey(Hello.getPlugin(), "b2Z"), PersistentDataType.INTEGER) : 0;
+            int b1X = container.has(new NamespacedKey(Main.getPlugin(), "b1X"), PersistentDataType.INTEGER) ?
+                    container.get(new NamespacedKey(Main.getPlugin(), "b1X"), PersistentDataType.INTEGER) : 0;
+            int b1Y = container.has(new NamespacedKey(Main.getPlugin(), "b1Y"), PersistentDataType.INTEGER) ?
+                    container.get(new NamespacedKey(Main.getPlugin(), "b1Y"), PersistentDataType.INTEGER): 0 ;
+            int b1Z = container.has(new NamespacedKey(Main.getPlugin(), "b1Z"), PersistentDataType.INTEGER) ?
+                    container.get(new NamespacedKey(Main.getPlugin(), "b1Z"), PersistentDataType.INTEGER) : 0;
+            int b2X = container.has(new NamespacedKey(Main.getPlugin(), "b2X"), PersistentDataType.INTEGER) ?
+                    container.get(new NamespacedKey(Main.getPlugin(), "b2X"), PersistentDataType.INTEGER) : 0;
+            int b2Y = container.has(new NamespacedKey(Main.getPlugin(), "b2Y"), PersistentDataType.INTEGER) ?
+                    container.get(new NamespacedKey(Main.getPlugin(), "b2Y"), PersistentDataType.INTEGER) : 0;
+            int b2Z = container.has(new NamespacedKey(Main.getPlugin(), "b2Z"), PersistentDataType.INTEGER) ?
+                    container.get(new NamespacedKey(Main.getPlugin(), "b2Z"), PersistentDataType.INTEGER) : 0;
 
             if (action == Action.RIGHT_CLICK_BLOCK) {
                 if (blockLoc.getBlockY() != b2Y) {
@@ -255,17 +251,17 @@ public class Event implements Listener {
                 }
 
                 container.set(
-                        new NamespacedKey(Hello.getPlugin(), "b1X"),
+                        new NamespacedKey(Main.getPlugin(), "b1X"),
                         PersistentDataType.INTEGER,
                         blockLoc.getBlockX()
                 );
                 container.set(
-                        new NamespacedKey(Hello.getPlugin(), "b1Y"),
+                        new NamespacedKey(Main.getPlugin(), "b1Y"),
                         PersistentDataType.INTEGER,
                         blockLoc.getBlockY()
                 );
                 container.set(
-                        new NamespacedKey(Hello.getPlugin(), "b1Z"),
+                        new NamespacedKey(Main.getPlugin(), "b1Z"),
                         PersistentDataType.INTEGER,
                         blockLoc.getBlockZ()
                 );
@@ -281,17 +277,17 @@ public class Event implements Listener {
 
 
                 container.set(
-                        new NamespacedKey(Hello.getPlugin(), "b2X"),
+                        new NamespacedKey(Main.getPlugin(), "b2X"),
                         PersistentDataType.INTEGER,
                         blockLoc.getBlockX()
                 );
                 container.set(
-                        new NamespacedKey(Hello.getPlugin(), "b2Y"),
+                        new NamespacedKey(Main.getPlugin(), "b2Y"),
                         PersistentDataType.INTEGER,
                         blockLoc.getBlockY()
                 );
                 container.set(
-                        new NamespacedKey(Hello.getPlugin(), "b2Z"),
+                        new NamespacedKey(Main.getPlugin(), "b2Z"),
                         PersistentDataType.INTEGER,
                         blockLoc.getBlockZ()
                 );

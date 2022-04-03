@@ -1,16 +1,15 @@
-package me.test.plugin.hello;
+package me.test.plugin.bomberman;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class Hello extends JavaPlugin {
+public final class Main extends JavaPlugin {
 
-    private static Hello plugin;
+    private static Main plugin;
 
     @Override
     public void onEnable() {
         plugin = this;
-        this.getCommand("fly").setExecutor(new CommandTest(this));
-        this.getCommand("setspawn").setExecutor(new SetSpawnCommand());
+        this.getCommand("startgame").setExecutor(new StartGameCommand());
         getServer().getPluginManager().registerEvents(new Event(), this);
         getLogger().info("onEnable has been invoked!");
     }
@@ -21,7 +20,7 @@ public final class Hello extends JavaPlugin {
         getLogger().info("onDisable has been invoked!");
     }
 
-    public static Hello getPlugin() {
+    public static Main getPlugin() {
         return plugin;
     }
 }

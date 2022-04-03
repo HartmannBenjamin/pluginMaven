@@ -1,7 +1,8 @@
-package me.test.plugin.hello;
+package me.test.plugin.bomberman;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
@@ -13,9 +14,12 @@ import org.bukkit.persistence.PersistentDataType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Random;
 
-public class SetSpawnCommand implements CommandExecutor {
+public class StartGameCommand implements CommandExecutor {
+
+    private final ArrayList<Location> spawnsLocation = new ArrayList<>();
 
     public boolean onCommand(
             @Nonnull CommandSender sender,
@@ -27,21 +31,47 @@ public class SetSpawnCommand implements CommandExecutor {
             Player player = ((Player) sender);
             PersistentDataContainer container = player.getWorld().getPersistentDataContainer();
 
-            int b1X = container.has(new NamespacedKey(Hello.getPlugin(), "b1X"), PersistentDataType.INTEGER) ?
-                    container.get(new NamespacedKey(Hello.getPlugin(), "b1X"), PersistentDataType.INTEGER) : 0;
-            int b1Y = container.has(new NamespacedKey(Hello.getPlugin(), "b1Y"), PersistentDataType.INTEGER) ?
-                    container.get(new NamespacedKey(Hello.getPlugin(), "b1Y"), PersistentDataType.INTEGER) : 0;
-            int b1Z = container.has(new NamespacedKey(Hello.getPlugin(), "b1Z"), PersistentDataType.INTEGER) ?
-                    container.get(new NamespacedKey(Hello.getPlugin(), "b1Z"), PersistentDataType.INTEGER) : 0;
-            int b2X = container.has(new NamespacedKey(Hello.getPlugin(), "b2X"), PersistentDataType.INTEGER) ?
-                    container.get(new NamespacedKey(Hello.getPlugin(), "b2X"), PersistentDataType.INTEGER) : 0;
-            int b2Y = container.has(new NamespacedKey(Hello.getPlugin(), "b2Y"), PersistentDataType.INTEGER) ?
-                    container.get(new NamespacedKey(Hello.getPlugin(), "b2Y"), PersistentDataType.INTEGER) : 0;
-            int b2Z = container.has(new NamespacedKey(Hello.getPlugin(), "b2Z"), PersistentDataType.INTEGER) ?
-                    container.get(new NamespacedKey(Hello.getPlugin(), "b2Z"), PersistentDataType.INTEGER) : 0;
+            int b1X = container.has(new NamespacedKey(Main.getPlugin(), "b1X"), PersistentDataType.INTEGER) ?
+                    container.get(new NamespacedKey(Main.getPlugin(), "b1X"), PersistentDataType.INTEGER) : 0;
+            int b1Y = container.has(new NamespacedKey(Main.getPlugin(), "b1Y"), PersistentDataType.INTEGER) ?
+                    container.get(new NamespacedKey(Main.getPlugin(), "b1Y"), PersistentDataType.INTEGER) : 0;
+            int b1Z = container.has(new NamespacedKey(Main.getPlugin(), "b1Z"), PersistentDataType.INTEGER) ?
+                    container.get(new NamespacedKey(Main.getPlugin(), "b1Z"), PersistentDataType.INTEGER) : 0;
+            int b2X = container.has(new NamespacedKey(Main.getPlugin(), "b2X"), PersistentDataType.INTEGER) ?
+                    container.get(new NamespacedKey(Main.getPlugin(), "b2X"), PersistentDataType.INTEGER) : 0;
+            int b2Y = container.has(new NamespacedKey(Main.getPlugin(), "b2Y"), PersistentDataType.INTEGER) ?
+                    container.get(new NamespacedKey(Main.getPlugin(), "b2Y"), PersistentDataType.INTEGER) : 0;
+            int b2Z = container.has(new NamespacedKey(Main.getPlugin(), "b2Z"), PersistentDataType.INTEGER) ?
+                    container.get(new NamespacedKey(Main.getPlugin(), "b2Z"), PersistentDataType.INTEGER) : 0;
 
             if (b1Y != b2Y) {
                 return false;
+            }
+
+            if (b1X < b2X) {
+                if (b1Z < b2Z) {
+                    spawnsLocation.add(new Location(player.getWorld(), b1X + 1.5, b1Y + 2, b1Z + 0.5));
+                    spawnsLocation.add(new Location(player.getWorld(), b1X + 1.5, b1Y + 2, b2Z - 0.5));
+                    spawnsLocation.add(new Location(player.getWorld(), b2X - 0.5, b1Y + 2, b1Z + 1.5));
+                    spawnsLocation.add(new Location(player.getWorld(), b2X - 0.5, b1Y + 2, b2Z - 0.5));
+                } else {
+                    spawnsLocation.add(new Location(player.getWorld(), b1X + 1.5, b1Y + 2, b1Z - 0.5));
+                    spawnsLocation.add(new Location(player.getWorld(), b1X + 1.5, b1Y + 2, b2Z + 1.5));
+                    spawnsLocation.add(new Location(player.getWorld(), b2X - 0.5, b1Y + 2, b1Z - 0.5));
+                    spawnsLocation.add(new Location(player.getWorld(), b2X - 0.5, b1Y + 2, b2Z + 1.5));
+                }
+            } else {
+                if (b1Z < b2Z) {
+                    spawnsLocation.add(new Location(player.getWorld(), b1X - 0.5, b1Y + 2, b1Z + 1.5));
+                    spawnsLocation.add(new Location(player.getWorld(), b1X - 0.5, b1Y + 2, b2Z - 0.5));
+                    spawnsLocation.add(new Location(player.getWorld(), b2X + 1.5, b1Y + 2, b1Z + 1.5));
+                    spawnsLocation.add(new Location(player.getWorld(), b2X + 1.5, b1Y + 2, b2Z - 0.5));
+                } else {
+                    spawnsLocation.add(new Location(player.getWorld(), b1X - 0.5, b1Y + 2, b1Z - 0.5));
+                    spawnsLocation.add(new Location(player.getWorld(), b1X - 0.5, b1Y + 2, b2Z + 1.5));
+                    spawnsLocation.add(new Location(player.getWorld(), b2X + 1.5, b1Y + 2, b1Z - 0.5));
+                    spawnsLocation.add(new Location(player.getWorld(), b2X + 1.5, b1Y + 2, b2Z + 1.5));
+                }
             }
 
             if (b1X < b2X) {
@@ -201,11 +231,11 @@ public class SetSpawnCommand implements CommandExecutor {
                 }
             }
 
-            for (Player p : Hello.getPlugin().getServer().getOnlinePlayers()) {
-//                p.teleport(new Location(player.getWorld(), mid(b1X, b2X), b1Y + 3, mid(b1Z, b2Z)));
+            for (Player p : Main.getPlugin().getServer().getOnlinePlayers()) {
+
             }
 
-            Hello.getPlugin().getServer().getScheduler().runTaskTimer(Hello.getPlugin(), new Runnable()
+            Main.getPlugin().getServer().getScheduler().runTaskTimer(Main.getPlugin(), new Runnable()
             {
                 int time = 3; //or any other number you want to start countdown from
 
@@ -214,10 +244,18 @@ public class SetSpawnCommand implements CommandExecutor {
                 {
                     if (this.time == 0)
                     {
-                        //test
+                        for (final Player player : Main.getPlugin().getServer().getOnlinePlayers()) {
+                            if (spawnsLocation.size() > 0) {
+
+                                player.teleport(spawnsLocation.get(0));
+                                Main.getPlugin().getServer().broadcastMessage("X " + spawnsLocation.get(0).getBlockX() +
+                                        " Z " + spawnsLocation.get(0).getBlockZ());
+                                spawnsLocation.remove(0);
+                            }
+                        }
                     }
 
-                    for (final Player player : Hello.getPlugin().getServer().getOnlinePlayers())
+                    for (final Player player : Main.getPlugin().getServer().getOnlinePlayers())
                     {
                         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(this.time + " second(s) remains!"));
                     }
@@ -228,9 +266,5 @@ public class SetSpawnCommand implements CommandExecutor {
         }
 
         return false;
-    }
-
-    private static int mid(int x, int y) {
-        return x/2 + y/2 + (x%2 + y%2)/2;
     }
 }

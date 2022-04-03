@@ -1,4 +1,4 @@
-package me.test.plugin.hello;
+package me.test.plugin.bomberman;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;

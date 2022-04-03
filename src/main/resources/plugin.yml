@@ -1,11 +1,8 @@
-name: Hello
+name: Bomberman
 version: '${project.version}'
-main: me.test.plugin.hello.Hello
+main: me.test.plugin.bomberman.Main
 api-version: 1.18
 commands:
-  fly:
-    description: Fly
-    usage: /fly
-  setspawn:
-    description: Setspawn
-    usage: /setspawn
+  startgame:
+    description: Start Bomberman
+    usage: /startgame

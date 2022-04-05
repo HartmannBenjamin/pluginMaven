@@ -2,19 +2,18 @@ package me.test.plugin.bomberman;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -28,8 +27,15 @@ public class Event implements Listener {
             Player p = (Player) event.getEntity();
 
             switch (event.getItem().getItemStack().getType()) {
-                case DIRT:
+                case FIRE_CHARGE:
                     BomberMan.setPlayerBombPower(p, BomberMan.getPlayerBombPower(p) + event.getItem().getItemStack().getAmount());
+                    break;
+                case FEATHER:
+                    BomberMan.setPlayerSpeed(p, BomberMan.getPlayerSpeed(p) + event.getItem().getItemStack().getAmount());
+                    break;
+                case REDSTONE:
+                    p.getInventory().addItem(new ItemStack(Material.TNT, event.getItem().getItemStack().getAmount()));
+                    BomberMan.setPlayerBombNumber(p, BomberMan.getPlayerBombNumber(p) + event.getItem().getItemStack().getAmount());
                     break;
             }
         }

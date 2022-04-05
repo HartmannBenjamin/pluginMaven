@@ -73,6 +73,7 @@ public class BomberMan {
             p.setGameMode(GameMode.CREATIVE);
             p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
             p.getInventory().clear();
+            p.setWalkSpeed(0.1F);
         }
     }
 
@@ -279,7 +280,8 @@ public class BomberMan {
             p.setGameMode(GameMode.SURVIVAL);
             remainingPlayers.add(p);
             setPlayerBombPower(p, 1);
-            scoreboard(p, 1);
+            setPlayerSpeed(p, 1);
+            scoreboard(p, 1, 1, 1);
         }
 
         new BukkitRunnable()
@@ -301,7 +303,7 @@ public class BomberMan {
                 {
                     for (final Player player : Main.getPlugin().getServer().getOnlinePlayers()) {
                         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.GREEN + "C'est parti!"));
-                        player.getInventory().addItem(new ItemStack(Material.TNT, 64));
+                        player.getInventory().addItem(new ItemStack(Material.TNT, 1));
                     }
                 }
 
@@ -310,13 +312,19 @@ public class BomberMan {
         }.runTaskTimer(Main.getPlugin(), 0L, 20L);
     }
 
-    private static void scoreboard(Player p, int power) {
+    private static void scoreboard(Player p, int power, int speed, int number) {
         Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective obj = board.registerNewObjective("BomberMan", "dummy", "BomberMan - Sets");
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-        Score onlineName = obj.getScore(ChatColor.GRAY + "» Power");
-        onlineName.setScore(power);
+        Score powerPanel = obj.getScore(ChatColor.GRAY + "» Power");
+        powerPanel.setScore(power);
+
+        Score speedPanel = obj.getScore(ChatColor.GRAY + "» Speed");
+        speedPanel.setScore(speed);
+
+        Score numberPanel = obj.getScore(ChatColor.GRAY + "» Number of bombs");
+        numberPanel.setScore(number);
 
         p.setScoreboard(board);
     }
@@ -337,8 +345,51 @@ public class BomberMan {
                  power
          );
 
-        scoreboard(p, power);
+        scoreboard(p, power, getPlayerSpeed(p), getPlayerBombPower(p));
     }
+
+    public static int getPlayerSpeed(Player p) {
+        PersistentDataContainer container = p.getPersistentDataContainer();
+
+        return container.has(new NamespacedKey(Main.getPlugin(), "speed"), PersistentDataType.INTEGER) ?
+                container.get(new NamespacedKey(Main.getPlugin(), "speed"), PersistentDataType.INTEGER) : 1;
+    }
+
+    public static void setPlayerSpeed(Player p, int speed) {
+        if (speed < 10) {
+            PersistentDataContainer container = p.getPersistentDataContainer();
+
+            container.set(
+                    new NamespacedKey(Main.getPlugin(), "speed"),
+                    PersistentDataType.INTEGER,
+                    speed
+            );
+
+            p.setWalkSpeed((float) speed/10);
+
+            scoreboard(p, getPlayerBombPower(p), speed, getPlayerBombNumber(p));
+        }
+    }
+
+    public static int getPlayerBombNumber(Player p) {
+        PersistentDataContainer container = p.getPersistentDataContainer();
+
+        return container.has(new NamespacedKey(Main.getPlugin(), "number"), PersistentDataType.INTEGER) ?
+                container.get(new NamespacedKey(Main.getPlugin(), "number"), PersistentDataType.INTEGER) : 1;
+    }
+
+    public static void setPlayerBombNumber(Player p, int number) {
+        PersistentDataContainer container = p.getPersistentDataContainer();
+
+        container.set(
+                new NamespacedKey(Main.getPlugin(), "number"),
+                PersistentDataType.INTEGER,
+                number
+        );
+
+        scoreboard(p, getPlayerBombPower(p), getPlayerSpeed(p), number);
+    }
+
 
     static Player getKiller(Location location) {
         AtomicReference<Player> playerKiller = new AtomicReference<>();
@@ -379,7 +430,7 @@ public class BomberMan {
         {
             int time = 10 + preTime;
             int distance = 1;
-            final int power = getPlayerBombPower(fire.getCreator());;
+            final int power = getPlayerBombPower(fire.getCreator());
             boolean Xup = true;
             boolean Xdown = true;
             boolean Zup = true;
@@ -478,6 +529,8 @@ public class BomberMan {
                     currentFireBLock.getBlock().setType(Material.VOID_AIR);
                 }
             });
+
+            fire.getCreator().getInventory().addItem(new ItemStack(Material.TNT, 1));
         }, 5L);
     }
 
@@ -503,7 +556,22 @@ public class BomberMan {
     }
 
     private static void spawnItem(Location location) {
-        location.getWorld().dropItem(location.add(0, 1, 0), new ItemStack(Material.DIRT));
+        Random r = new Random();
+        int low = 1;
+        int high = 4;
+        int result = r.nextInt(high-low) + low;
+
+        switch (result) {
+            case 1:
+                location.getWorld().dropItem(location.add(0, 0, 0), new ItemStack(Material.FEATHER));
+                break;
+            case 2:
+                location.getWorld().dropItem(location.add(0, 0, 0), new ItemStack(Material.FIREWORK_ROCKET));
+                break;
+            case 3:
+                location.getWorld().dropItem(location.add(0, 0, 0), new ItemStack(Material.REDSTONE));
+                break;
+        }
     }
 
     public static boolean testBlock(Block block) {

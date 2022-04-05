@@ -9,6 +9,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
+import org.bukkit.scoreboard.Scoreboard;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -16,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class BomberMan {
-    private final Player player;
+    private final Player sender;
     private static boolean is_game = false;
     private final ArrayList<Location> spawnsLocation = new ArrayList<>();
     private static final ArrayList<TntGame> allTNTFire = new ArrayList<>();
@@ -31,7 +35,7 @@ public class BomberMan {
     public BomberMan(Player player) {
         PersistentDataContainer container = player.getWorld().getPersistentDataContainer();
 
-        this.player = player;
+        this.sender = player;
         this.b1X = container.has(new NamespacedKey(Main.getPlugin(), "b1X"), PersistentDataType.INTEGER) ?
                 container.get(new NamespacedKey(Main.getPlugin(), "b1X"), PersistentDataType.INTEGER) : 0;
         this.b1Y = container.has(new NamespacedKey(Main.getPlugin(), "b1Y"), PersistentDataType.INTEGER) ?
@@ -64,40 +68,46 @@ public class BomberMan {
     private static void endGame() {
         Main.getPlugin().getServer().broadcastMessage(remainingPlayers.get(0).getName() + " a gagné!");
         setGame(false);
+
+        for (final Player p : Main.getPlugin().getServer().getOnlinePlayers()) {
+            p.setGameMode(GameMode.CREATIVE);
+            p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+            p.getInventory().clear();
+        }
     }
 
     public void generateMap() {
         if (b1Y == b2Y) {
             buildProcess(b1X, b1Y, b1Z, b2X, b2Z);
         } else {
-            player.sendMessage("Mauvaises configurations de map");
+            sender.sendMessage("Mauvaises configurations de map");
         }
     }
 
     private void buildProcess(int b1X, int b1Y, int b1Z, int b2X, int b2Z) {
         if (b1X < b2X) {
             if (b1Z < b2Z) {
-                spawnsLocation.add(new Location(player.getWorld(), b1X + 1.5, b1Y + 2, b1Z + 0.5));
-                spawnsLocation.add(new Location(player.getWorld(), b1X + 1.5, b1Y + 2, b2Z - 0.5));
-                spawnsLocation.add(new Location(player.getWorld(), b2X - 0.5, b1Y + 2, b1Z + 1.5));
-                spawnsLocation.add(new Location(player.getWorld(), b2X - 0.5, b1Y + 2, b2Z - 0.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b1X + 1.5, b1Y + 2, b1Z + 0.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b1X + 1.5, b1Y + 2, b2Z - 0.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b2X - 0.5, b1Y + 2, b1Z + 1.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b2X - 0.5, b1Y + 2, b2Z - 0.5));
             } else {
-                spawnsLocation.add(new Location(player.getWorld(), b1X + 1.5, b1Y + 2, b1Z - 0.5));
-                spawnsLocation.add(new Location(player.getWorld(), b1X + 1.5, b1Y + 2, b2Z + 1.5));
-                spawnsLocation.add(new Location(player.getWorld(), b2X - 0.5, b1Y + 2, b1Z - 0.5));
-                spawnsLocation.add(new Location(player.getWorld(), b2X - 0.5, b1Y + 2, b2Z + 1.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b1X + 1.5, b1Y + 2, b1Z - 0.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b1X + 1.5, b1Y + 2, b2Z + 1.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b2X - 0.5, b1Y + 2, b1Z - 0.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b2X - 0.5, b1Y + 2, b2Z + 1.5));
             }
         } else {
             if (b1Z < b2Z) {
-                spawnsLocation.add(new Location(player.getWorld(), b1X - 0.5, b1Y + 2, b1Z + 1.5));
-                spawnsLocation.add(new Location(player.getWorld(), b1X - 0.5, b1Y + 2, b2Z - 0.5));
-                spawnsLocation.add(new Location(player.getWorld(), b2X + 1.5, b1Y + 2, b1Z + 1.5));
-                spawnsLocation.add(new Location(player.getWorld(), b2X + 1.5, b1Y + 2, b2Z - 0.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b1X - 0.5, b1Y + 2, b1Z + 1.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b1X - 0.5, b1Y + 2, b2Z - 0.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b2X + 1.5, b1Y + 2, b1Z + 1.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b2X + 1.5, b1Y + 2, b2Z - 0.5));
             } else {
-                spawnsLocation.add(new Location(player.getWorld(), b1X - 0.5, b1Y + 2, b1Z - 0.5));
-                spawnsLocation.add(new Location(player.getWorld(), b1X - 0.5, b1Y + 2, b2Z + 1.5));
-                spawnsLocation.add(new Location(player.getWorld(), b2X + 1.5, b1Y + 2, b1Z - 0.5));
-                spawnsLocation.add(new Location(player.getWorld(), b2X + 1.5, b1Y + 2, b2Z + 1.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b1X - 0.5, b1Y + 2, b1Z - 0.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b1X - 0.5, b1Y + 2, b2Z + 1.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b2X + 1.5, b1Y + 2, b1Z - 0.5));
+                spawnsLocation.add(new Location(sender.getWorld(), b2X + 1.5, b1Y + 2, b2Z + 1.5));
             }
         }
 
@@ -105,17 +115,17 @@ public class BomberMan {
             for (int i = b1X; i <= b2X; i++) {
                 if (b1Z < b2Z) {
                     for (int j = b1Z; j <= b2Z; j++) {
-                        player.getWorld().getBlockAt(i, b1Y, j).setType(Material.VOID_AIR);
-                        player.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.VOID_AIR);
-                        player.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.VOID_AIR);
-                        player.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.VOID_AIR);
                     }
                 } else {
                     for (int j = b2Z; j <= b1Z; j++) {
-                        player.getWorld().getBlockAt(i, b1Y, j).setType(Material.VOID_AIR);
-                        player.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.VOID_AIR);
-                        player.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.VOID_AIR);
-                        player.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.VOID_AIR);
                     }
                 }
             }
@@ -123,17 +133,17 @@ public class BomberMan {
             for (int i = b2X; i <= b1X; i++) {
                 if (b1Z < b2Z) {
                     for (int j = b1Z; j <= b2Z; j++) {
-                        player.getWorld().getBlockAt(i, b1Y, j).setType(Material.VOID_AIR);
-                        player.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.VOID_AIR);
-                        player.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.VOID_AIR);
-                        player.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.VOID_AIR);
                     }
                 } else {
                     for (int j = b2Z; j <= b1Z; j++) {
-                        player.getWorld().getBlockAt(i, b1Y, j).setType(Material.VOID_AIR);
-                        player.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.VOID_AIR);
-                        player.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.VOID_AIR);
-                        player.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.VOID_AIR);
+                        sender.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.VOID_AIR);
                     }
                 }
             }
@@ -145,9 +155,9 @@ public class BomberMan {
                     for (int j = b1Z; j <= b2Z; j++) {
                         if (i == b1X || i == b2X || j == b1Z || j == b2Z ||
                                 ((Math.abs(j - b1Z)%2) == 0) && ((Math.abs(i - b1X)%2) == 0)) {
-                            player.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.BEDROCK);
-                            player.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.BEDROCK);
-                            player.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.BEDROCK);
+                            sender.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.BEDROCK);
+                            sender.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.BEDROCK);
+                            sender.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.BEDROCK);
                         } else {
                             boolean condition1 = (Math.abs(i - b1X) == 1 || Math.abs(i - b1X) == 2);
                             boolean condition2 = (Math.abs(j - b1Z) == 1 || Math.abs(j - b1Z) == 2);
@@ -159,22 +169,22 @@ public class BomberMan {
                                 Random r = new Random();
 
                                 if (r.nextInt(100) > 50) {
-                                    player.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.DIRT);
-                                    player.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.DIRT);
-                                    player.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.DIRT);
+                                    sender.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.DIRT);
+                                    sender.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.DIRT);
+                                    sender.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.DIRT);
                                 }
                             }
                         }
 
-                        player.getWorld().getBlockAt(i, b1Y, j).setType(Material.BEDROCK);
+                        sender.getWorld().getBlockAt(i, b1Y, j).setType(Material.BEDROCK);
                     }
                 } else {
                     for (int j = b2Z; j <= b1Z; j++) {
                         if (i == b1X || i == b2X || j == b1Z || j == b2Z ||
                                 ((Math.abs(j - b2Z)%2) == 0) && ((Math.abs(i - b1X)%2) == 0)) {
-                            player.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.BEDROCK);
-                            player.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.BEDROCK);
-                            player.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.BEDROCK);
+                            sender.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.BEDROCK);
+                            sender.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.BEDROCK);
+                            sender.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.BEDROCK);
                         } else {
                             boolean condition1 = (Math.abs(i - b1X) == 1 || Math.abs(i - b1X) == 2);
                             boolean condition2 = (Math.abs(j - b2Z) == 1 || Math.abs(j - b2Z) == 2);
@@ -186,14 +196,14 @@ public class BomberMan {
                                 Random r = new Random();
 
                                 if (r.nextInt(100) > 50) {
-                                    player.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.DIRT);
-                                    player.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.DIRT);
-                                    player.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.DIRT);
+                                    sender.getWorld().getBlockAt(i, b1Y+1, j).setType(Material.DIRT);
+                                    sender.getWorld().getBlockAt(i, b1Y+2, j).setType(Material.DIRT);
+                                    sender.getWorld().getBlockAt(i, b1Y+3, j).setType(Material.DIRT);
                                 }
                             }
                         }
 
-                        player.getWorld().getBlockAt(i, b1Y, j).setType(Material.BEDROCK);
+                        sender.getWorld().getBlockAt(i, b1Y, j).setType(Material.BEDROCK);
                     }
                 }
             }
@@ -203,9 +213,9 @@ public class BomberMan {
                     for (int j = b1Z; j <= b2Z; j++) {
                         if (i == b1X || i == b2X || j == b1Z || j == b2Z ||
                                 ((Math.abs(j - b1Z) % 2) == 0) && ((Math.abs(i - b2X) % 2) == 0)) {
-                            player.getWorld().getBlockAt(i, b1Y + 1, j).setType(Material.BEDROCK);
-                            player.getWorld().getBlockAt(i, b1Y + 2, j).setType(Material.BEDROCK);
-                            player.getWorld().getBlockAt(i, b1Y + 3, j).setType(Material.BEDROCK);
+                            sender.getWorld().getBlockAt(i, b1Y + 1, j).setType(Material.BEDROCK);
+                            sender.getWorld().getBlockAt(i, b1Y + 2, j).setType(Material.BEDROCK);
+                            sender.getWorld().getBlockAt(i, b1Y + 3, j).setType(Material.BEDROCK);
                         } else {
                             boolean condition1 = (Math.abs(i - b2X) == 1 || Math.abs(i - b2X) == 2);
                             boolean condition2 = (Math.abs(j - b1Z) == 1 || Math.abs(j - b1Z) == 2);
@@ -217,23 +227,22 @@ public class BomberMan {
                                 Random r = new Random();
 
                                 if (r.nextInt(100) > 50) {
-                                    player.getWorld().getBlockAt(i, b1Y + 1, j).setType(Material.DIRT);
-                                    player.getWorld().getBlockAt(i, b1Y + 2, j).setType(Material.DIRT);
-                                    player.getWorld().getBlockAt(i, b1Y + 3, j).setType(Material.DIRT);
+                                    sender.getWorld().getBlockAt(i, b1Y + 1, j).setType(Material.DIRT);
+                                    sender.getWorld().getBlockAt(i, b1Y + 2, j).setType(Material.DIRT);
+                                    sender.getWorld().getBlockAt(i, b1Y + 3, j).setType(Material.DIRT);
                                 }
                             }
                         }
 
-
-                        player.getWorld().getBlockAt(i, b1Y, j).setType(Material.BEDROCK);
+                        sender.getWorld().getBlockAt(i, b1Y, j).setType(Material.BEDROCK);
                     }
                 } else {
                     for (int j = b2Z; j <= b1Z; j++) {
                         if (i == b1X || i == b2X || j == b1Z || j == b2Z ||
                                 ((Math.abs(j - b2Z) % 2) == 0) && ((Math.abs(i - b2X) % 2) == 0)) {
-                            player.getWorld().getBlockAt(i, b1Y + 1, j).setType(Material.BEDROCK);
-                            player.getWorld().getBlockAt(i, b1Y + 2, j).setType(Material.BEDROCK);
-                            player.getWorld().getBlockAt(i, b1Y + 3, j).setType(Material.BEDROCK);
+                            sender.getWorld().getBlockAt(i, b1Y + 1, j).setType(Material.BEDROCK);
+                            sender.getWorld().getBlockAt(i, b1Y + 2, j).setType(Material.BEDROCK);
+                            sender.getWorld().getBlockAt(i, b1Y + 3, j).setType(Material.BEDROCK);
                         } else {
                             boolean condition1 = (Math.abs(i - b2X) == 1 || Math.abs(i - b2X) == 2);
                             boolean condition2 = (Math.abs(j - b2Z) == 1 || Math.abs(j - b2Z) == 2);
@@ -245,14 +254,14 @@ public class BomberMan {
                                 Random r = new Random();
 
                                 if (r.nextInt(100) > 50) {
-                                    player.getWorld().getBlockAt(i, b1Y + 1, j).setType(Material.DIRT);
-                                    player.getWorld().getBlockAt(i, b1Y + 2, j).setType(Material.DIRT);
-                                    player.getWorld().getBlockAt(i, b1Y + 3, j).setType(Material.DIRT);
+                                    sender.getWorld().getBlockAt(i, b1Y + 1, j).setType(Material.DIRT);
+                                    sender.getWorld().getBlockAt(i, b1Y + 2, j).setType(Material.DIRT);
+                                    sender.getWorld().getBlockAt(i, b1Y + 3, j).setType(Material.DIRT);
                                 }
                             }
                         }
 
-                        player.getWorld().getBlockAt(i, b1Y, j).setType(Material.BEDROCK);
+                        sender.getWorld().getBlockAt(i, b1Y, j).setType(Material.BEDROCK);
                     }
                 }
             }
@@ -269,6 +278,8 @@ public class BomberMan {
             p.getInventory().clear();
             p.setGameMode(GameMode.SURVIVAL);
             remainingPlayers.add(p);
+            setPlayerBombPower(p, 1);
+            scoreboard(p, 1);
         }
 
         new BukkitRunnable()
@@ -297,6 +308,36 @@ public class BomberMan {
                 this.time--;
             }
         }.runTaskTimer(Main.getPlugin(), 0L, 20L);
+    }
+
+    private static void scoreboard(Player p, int power) {
+        Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
+        Objective obj = board.registerNewObjective("BomberMan", "dummy", "BomberMan - Sets");
+        obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+        Score onlineName = obj.getScore(ChatColor.GRAY + "» Power");
+        onlineName.setScore(power);
+
+        p.setScoreboard(board);
+    }
+
+    public static int getPlayerBombPower(Player p) {
+        PersistentDataContainer container = p.getPersistentDataContainer();
+
+        return container.has(new NamespacedKey(Main.getPlugin(), "power"), PersistentDataType.INTEGER) ?
+                container.get(new NamespacedKey(Main.getPlugin(), "power"), PersistentDataType.INTEGER) : 1;
+    }
+
+    public static void setPlayerBombPower(Player p, int power) {
+        PersistentDataContainer container = p.getPersistentDataContainer();
+
+         container.set(
+                 new NamespacedKey(Main.getPlugin(), "power"),
+                 PersistentDataType.INTEGER,
+                 power
+         );
+
+        scoreboard(p, power);
     }
 
     static Player getKiller(Location location) {
@@ -338,7 +379,7 @@ public class BomberMan {
         {
             int time = 10 + preTime;
             int distance = 1;
-            final int power = 4;
+            final int power = getPlayerBombPower(fire.getCreator());;
             boolean Xup = true;
             boolean Xdown = true;
             boolean Zup = true;
@@ -350,7 +391,6 @@ public class BomberMan {
                 if (time > 9 && location.getBlock().getType() == Material.FIRE) {
                     this.cancel();
                     clearFire(fire);
-                    allTNTFire.remove(fire);
                 }
 
                 if (time == 10) {
@@ -418,7 +458,6 @@ public class BomberMan {
 
                     if (distance == power) {
                         clearFire(fire);
-                        allTNTFire.remove(fire);
                         this.cancel();
                     }
 
@@ -431,13 +470,15 @@ public class BomberMan {
     }
 
     private static void clearFire(TntGame fire) {
-        Main.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(Main.getPlugin(), () ->
-                fire.getBlocks().forEach((currentFireBLock) -> {
+        Main.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(Main.getPlugin(), () -> {
+            allTNTFire.remove(fire);
 
-                    if (!isOtherBomb(currentFireBLock)) {
-                        currentFireBLock.getBlock().setType(Material.VOID_AIR);
-                    }
-                }), 5L);
+            fire.getBlocks().forEach((currentFireBLock) -> {
+                if (!isOtherBomb(currentFireBLock)) {
+                    currentFireBLock.getBlock().setType(Material.VOID_AIR);
+                }
+            });
+        }, 5L);
     }
 
     private static boolean isOtherBomb(Location location) {
@@ -462,7 +503,7 @@ public class BomberMan {
     }
 
     private static void spawnItem(Location location) {
-        location.getWorld().dropItem(location, new ItemStack(Material.DIRT));
+        location.getWorld().dropItem(location.add(0, 1, 0), new ItemStack(Material.DIRT));
     }
 
     public static boolean testBlock(Block block) {

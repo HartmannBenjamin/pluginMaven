@@ -11,6 +11,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -20,10 +21,16 @@ import org.bukkit.persistence.PersistentDataType;
 public class Event implements Listener {
 
     @EventHandler
-    public void onEntityCombustEvent(EntityCombustEvent event) {
+    public void onEntityPickUpItemEvent(EntityPickupItemEvent event) {
         if (BomberMan.isGame()) {
-            if (event.getEntityType() == EntityType.DROPPED_ITEM) {
-//            event.setCancelled(true);
+            event.setCancelled(true);
+            event.getItem().remove();
+            Player p = (Player) event.getEntity();
+
+            switch (event.getItem().getItemStack().getType()) {
+                case DIRT:
+                    BomberMan.setPlayerBombPower(p, BomberMan.getPlayerBombPower(p) + event.getItem().getItemStack().getAmount());
+                    break;
             }
         }
     }
@@ -31,9 +38,7 @@ public class Event implements Listener {
     @EventHandler
     public void onEntityDamageEvent(EntityDamageEvent e) {
         if (BomberMan.isGame()) {
-            if (e.getEntityType() == EntityType.DROPPED_ITEM) {
-//                e.setCancelled(true);
-            } else if (e.getEntity() instanceof Player) {
+            if (e.getEntity() instanceof Player) {
                 if (e.getCause().equals(EntityDamageEvent.DamageCause.FIRE) || e.getCause().equals(EntityDamageEvent.DamageCause.FIRE_TICK)) {
                     Player p = (Player) e.getEntity();
                     Location loc = p.getLocation();

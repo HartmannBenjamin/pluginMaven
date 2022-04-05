@@ -2,12 +2,16 @@ package me.test.plugin.bomberman;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -16,17 +20,42 @@ import org.bukkit.persistence.PersistentDataType;
 public class Event implements Listener {
 
     @EventHandler
-    public void fireDamage(EntityDamageEvent e) {
-        if (e.getEntity() instanceof Player) {
-            if (e.getCause().equals(EntityDamageEvent.DamageCause.FIRE) || e.getCause().equals(EntityDamageEvent.DamageCause.FIRE_TICK)) {
-                if (BomberMan.isGame()) {
+    public void onEntityCombustEvent(EntityCombustEvent event) {
+        if (BomberMan.isGame()) {
+            if (event.getEntityType() == EntityType.DROPPED_ITEM) {
+//            event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onEntityDamageEvent(EntityDamageEvent e) {
+        if (BomberMan.isGame()) {
+            if (e.getEntityType() == EntityType.DROPPED_ITEM) {
+//                e.setCancelled(true);
+            } else if (e.getEntity() instanceof Player) {
+                if (e.getCause().equals(EntityDamageEvent.DamageCause.FIRE) || e.getCause().equals(EntityDamageEvent.DamageCause.FIRE_TICK)) {
                     Player p = (Player) e.getEntity();
                     Location loc = p.getLocation();
                     Player killer = BomberMan.getKiller(loc);
-                    p.sendMessage(ChatColor.RED + "Vous avez été tué par " + ChatColor.BOLD + killer.getName());
+
+                    if (p.getName().equals(killer.getName())) {
+                        Main.getPlugin().getServer().broadcastMessage(ChatColor.RED + p.getName() + " s'est tué(e) tout seul :/");
+                    } else {
+                        Main.getPlugin().getServer().broadcastMessage(ChatColor.RED + p.getName() + " a été tué(e) par "
+                                + ChatColor.BOLD + killer.getName());
+                    }
+
+                    p.setHealth(0);
+                    BomberMan.removePlayer(p);
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void fireDamage(PlayerDeathEvent e) {
+        e.setDeathMessage("");
     }
 
     @EventHandler
@@ -37,13 +66,23 @@ public class Event implements Listener {
     }
 
     @EventHandler
-    public void onPlace(BlockPlaceEvent event) {
-        Block tnt = event.getBlockPlaced();
+    public void onBlockBreakEvent(BlockBreakEvent event) {
+        if (BomberMan.isGame()) {
+            event.setCancelled(true);
+        }
+    }
 
-        if (tnt.getType() == Material.TNT) {
-            if(tnt.getLocation().add(0, -1, 0).getBlock().getType() == Material.BEDROCK) {
-                tnt.getLocation().add(0, 1, 0).getBlock().setType(Material.BARRIER);
-                BomberMan.explosion(tnt.getLocation(), new TntGame(tnt.getLocation(), event.getPlayer()), 30);
+    @EventHandler
+    public void onPlace(BlockPlaceEvent event) {
+        if (BomberMan.isGame()) {
+            Block tnt = event.getBlockPlaced();
+            if (tnt.getType() == Material.TNT) {
+                if(tnt.getLocation().add(0, -1, 0).getBlock().getType() == Material.BEDROCK) {
+                    tnt.getLocation().add(0, 1, 0).getBlock().setType(Material.BARRIER);
+                    BomberMan.explosion(tnt.getLocation(), new TntGame(tnt.getLocation(), event.getPlayer()), 30);
+                } else {
+                    event.setCancelled(true);
+                }
             } else {
                 event.setCancelled(true);
             }

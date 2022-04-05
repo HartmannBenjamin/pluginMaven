@@ -2,12 +2,10 @@ package me.test.plugin.bomberman;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -22,6 +20,7 @@ public class BomberMan {
     private static boolean is_game = false;
     private final ArrayList<Location> spawnsLocation = new ArrayList<>();
     private static final ArrayList<TntGame> allTNTFire = new ArrayList<>();
+    private static final ArrayList<Player> remainingPlayers = new ArrayList<>();
     private final int b1X;
     private final int b1Y;
     private final int b1Z;
@@ -51,8 +50,20 @@ public class BomberMan {
         return is_game;
     }
 
-    public void setGame(boolean is_game) {
+    public static void setGame(boolean is_game) {
         BomberMan.is_game = is_game;
+    }
+
+    public static void removePlayer(Player player) {
+        BomberMan.remainingPlayers.remove(player);
+        if (remainingPlayers.size() < 2) {
+            endGame();
+        }
+    }
+
+    private static void endGame() {
+        Main.getPlugin().getServer().broadcastMessage(remainingPlayers.get(0).getName() + " a gagné!");
+        setGame(false);
     }
 
     public void generateMap() {
@@ -252,12 +263,12 @@ public class BomberMan {
         for (final Player p : Main.getPlugin().getServer().getOnlinePlayers()) {
             if (spawnsLocation.size() > 0) {
                 p.teleport(spawnsLocation.get(0));
-                Main.getPlugin().getServer().broadcastMessage("X " + spawnsLocation.get(0).getBlockX() +
-                        " Z " + spawnsLocation.get(0).getBlockZ());
                 spawnsLocation.remove(0);
             }
 
-            p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.GREEN + "C'est parti!"));
+            p.getInventory().clear();
+            p.setGameMode(GameMode.SURVIVAL);
+            remainingPlayers.add(p);
         }
 
         new BukkitRunnable()
@@ -279,6 +290,7 @@ public class BomberMan {
                 {
                     for (final Player player : Main.getPlugin().getServer().getOnlinePlayers()) {
                         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.GREEN + "C'est parti!"));
+                        player.getInventory().addItem(new ItemStack(Material.TNT, 64));
                     }
                 }
 
@@ -290,13 +302,33 @@ public class BomberMan {
     static Player getKiller(Location location) {
         AtomicReference<Player> playerKiller = new AtomicReference<>();
 
-        allTNTFire.forEach((tntGame) -> tntGame.getBlocks().forEach((fire) -> {
-            if (fire.getBlockX() == location.getBlockX() && fire.getBlockZ() ==  location.getBlockZ()) {
-                playerKiller.set(tntGame.getCreator());
-            }
-        }));
+        ArrayList<Location> locations = new ArrayList<>();
+        locations.add(location);
+        locations.add(location.getBlock().getLocation().add(1, 0, 0));
+        locations.add(location.getBlock().getLocation().add(1, 0, 1));
+        locations.add(location.getBlock().getLocation().add(0, 0, 1));
+        locations.add(location.getBlock().getLocation().add(-1, 0, 0));
+        locations.add(location.getBlock().getLocation().add(-1, 0, 0));
+        locations.add(location.getBlock().getLocation().add(-1, 0, -1));
+        locations.add(location.getBlock().getLocation().add(0, 0, -1));
 
-        return playerKiller.get();
+        while (locations.size() > 0) {
+            Location currentLoc = locations.get(0);
+
+            allTNTFire.forEach((tntGame) -> tntGame.getBlocks().forEach((fire) -> {
+                if (fire.getBlockX() == currentLoc.getBlockX() && fire.getBlockZ() ==  currentLoc.getBlockZ()) {
+                    playerKiller.set(tntGame.getCreator());
+                }
+            }));
+
+            if (playerKiller.get() != null) {
+                return playerKiller.get();
+            }
+
+            locations.remove(0);
+        }
+
+        return null;
     }
 
     static void explosion(Location location, TntGame fire, int preTime) {
@@ -425,6 +457,12 @@ public class BomberMan {
         block.setType(Material.FIRE);
         block.getWorld().getBlockAt(location.getBlockX(), location.getBlockY() + 1, location.getBlockZ()).setType(Material.VOID_AIR);
         block.getWorld().getBlockAt(location.getBlockX(), location.getBlockY() + 2, location.getBlockZ()).setType(Material.VOID_AIR);
+
+        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Main.getPlugin(), () -> spawnItem(location), 20L);
+    }
+
+    private static void spawnItem(Location location) {
+        location.getWorld().dropItem(location, new ItemStack(Material.DIRT));
     }
 
     public static boolean testBlock(Block block) {

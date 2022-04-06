@@ -47,10 +47,6 @@ public class PlayerService {
         remainingPlayers.remove(player);
         player.setGameMode(GameMode.SPECTATOR);
 
-        for (final Player p : remainingPlayers) {
-            Main.getPlugin().getServer().broadcastMessage("remaining: " +  p);
-        }
-
         if (remainingPlayers.size() < 2) {
             BomberMan.endGame(remainingPlayers.get(0).getName());
         }
@@ -81,6 +77,8 @@ public class PlayerService {
             p.getInventory().clear();
             p.setWalkSpeed(0.2F);
         }
+
+        remainingPlayers.clear();
     }
 
     public static void playTntSound(Location location) {

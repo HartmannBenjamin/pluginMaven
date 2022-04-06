@@ -17,10 +17,7 @@ public class StartGameCommand implements CommandExecutor {
             @Nullable String[] args
     ) {
         if (sender instanceof Player) {
-            Player player = ((Player) sender);
-
-            BomberMan bomberMan = new BomberMan(player);
-            bomberMan.generateMap();
+            BomberMan bomberMan = new BomberMan((Player) sender);
             bomberMan.startGame();
         }
 

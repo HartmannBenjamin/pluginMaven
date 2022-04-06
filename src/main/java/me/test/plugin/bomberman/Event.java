@@ -24,20 +24,10 @@ public class Event implements Listener {
         if (BomberMan.isGame()) {
             event.setCancelled(true);
             event.getItem().remove();
-            Player p = (Player) event.getEntity();
 
-            switch (event.getItem().getItemStack().getType()) {
-                case FIRE_CHARGE:
-                    BomberMan.setPlayerBombPower(p, BomberMan.getPlayerBombPower(p) + event.getItem().getItemStack().getAmount());
-                    break;
-                case FEATHER:
-                    BomberMan.setPlayerSpeed(p, BomberMan.getPlayerSpeed(p) + event.getItem().getItemStack().getAmount());
-                    break;
-                case REDSTONE:
-                    p.getInventory().addItem(new ItemStack(Material.TNT, event.getItem().getItemStack().getAmount()));
-                    BomberMan.setPlayerBombNumber(p, BomberMan.getPlayerBombNumber(p) + event.getItem().getItemStack().getAmount());
-                    break;
-            }
+            ItemStack itemStack = event.getItem().getItemStack();
+
+            Items.pickUpItem(itemStack.getType(), itemStack.getAmount(), (Player) event.getEntity());
         }
     }
 
@@ -48,7 +38,7 @@ public class Event implements Listener {
                 if (e.getCause().equals(EntityDamageEvent.DamageCause.FIRE) || e.getCause().equals(EntityDamageEvent.DamageCause.FIRE_TICK)) {
                     Player p = (Player) e.getEntity();
                     Location loc = p.getLocation();
-                    Player killer = BomberMan.getKiller(loc);
+                    Player killer = PlayerService.getKiller(loc);
 
                     if (p.getName().equals(killer.getName())) {
                         Main.getPlugin().getServer().broadcastMessage(ChatColor.RED + p.getName() + " s'est tué(e) tout seul :/");
@@ -58,7 +48,7 @@ public class Event implements Listener {
                     }
 
                     p.setHealth(0);
-                    BomberMan.removePlayer(p);
+                    PlayerService.removePlayer(p);
                 }
             }
         }
@@ -71,7 +61,7 @@ public class Event implements Listener {
 
     @EventHandler
     public void onGameModeChangeEvent(PlayerGameModeChangeEvent event) {
-        if (BomberMan.isGame()) {
+        if (BomberMan.isGame() && PlayerService.isAlive(event.getPlayer())) {
             event.setCancelled(true);
         }
     }
@@ -90,7 +80,7 @@ public class Event implements Listener {
             if (tnt.getType() == Material.TNT) {
                 if(tnt.getLocation().add(0, -1, 0).getBlock().getType() == Material.BEDROCK) {
                     tnt.getLocation().add(0, 1, 0).getBlock().setType(Material.BARRIER);
-                    BomberMan.explosion(tnt.getLocation(), new TntGame(tnt.getLocation(), event.getPlayer()), 30);
+                    TntService.explosion(tnt.getLocation(), new TntGame(tnt.getLocation(), event.getPlayer()), 30);
                 } else {
                     event.setCancelled(true);
                 }

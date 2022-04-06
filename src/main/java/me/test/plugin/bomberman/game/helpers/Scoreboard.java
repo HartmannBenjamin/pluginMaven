@@ -1,4 +1,4 @@
-package me.test.plugin.bomberman;
+package me.test.plugin.bomberman.game.helpers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -13,20 +13,17 @@ public class Scoreboard {
         Objective obj = board.registerNewObjective("BomberMan", "dummy", "BomberMan - Sets");
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-        Score tiret = obj.getScore(ChatColor.WHITE + "------------------------------");
-        tiret.setScore(1);
-
         Score powerPanel = obj.getScore(ChatColor.GRAY + "» Power : " + power);
-        powerPanel.setScore(2);
+        powerPanel.setScore(1);
 
         Score speedPanel = obj.getScore(ChatColor.GRAY + "» Speed : " + speed);
-        speedPanel.setScore(3);
+        speedPanel.setScore(2);
 
         Score numberPanel = obj.getScore(ChatColor.GRAY + "» Number of bombs : " + number);
-        numberPanel.setScore(4);
+        numberPanel.setScore(3);
 
         Score tiret2 = obj.getScore(ChatColor.WHITE + "------------------------------");
-        tiret2.setScore(5);
+        tiret2.setScore(4);
 
         p.setScoreboard(board);
     }

@@ -1,5 +1,8 @@
-package me.test.plugin.bomberman;
+package me.test.plugin.bomberman.game;
 
+import me.test.plugin.bomberman.Main;
+import me.test.plugin.bomberman.game.helpers.MapBuilder;
+import me.test.plugin.bomberman.game.helpers.PlayerService;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;

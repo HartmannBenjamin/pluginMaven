@@ -1,9 +1,8 @@
-package me.test.plugin.bomberman;
+package me.test.plugin.bomberman.game.helpers;
 
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Sound;
+import me.test.plugin.bomberman.game.BomberMan;
+import me.test.plugin.bomberman.Main;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -14,8 +13,8 @@ public class PlayerService {
 
     public static Player getKiller(Location location) {
         AtomicReference<Player> playerKiller = new AtomicReference<>();
-
         ArrayList<Location> locations = new ArrayList<>();
+
         locations.add(location);
         locations.add(location.getBlock().getLocation().add(1, 0, 0));
         locations.add(location.getBlock().getLocation().add(1, 0, 1));
@@ -48,7 +47,10 @@ public class PlayerService {
         remainingPlayers.remove(player);
         player.setGameMode(GameMode.SPECTATOR);
 
-        Main.getPlugin().getServer().broadcastMessage("remaining: " +  remainingPlayers.size());
+        for (final Player p : remainingPlayers) {
+            Main.getPlugin().getServer().broadcastMessage("remaining: " +  p);
+        }
+
         if (remainingPlayers.size() < 2) {
             BomberMan.endGame(remainingPlayers.get(0).getName());
         }
@@ -87,6 +89,10 @@ public class PlayerService {
         }
     }
 
+    public static void playSoundPickup(Player player) {
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1, 1);
+    }
+
     public static void playTntExplosionSound(Location location) {
         for (final Player p : Main.getPlugin().getServer().getOnlinePlayers()) {
             p.playSound(location, Sound.ENTITY_DRAGON_FIREBALL_EXPLODE, 1, 1);
@@ -95,5 +101,19 @@ public class PlayerService {
 
     public static boolean isAlive(Player player) {
         return remainingPlayers.contains(player);
+    }
+
+    public static void kill(Player p, Location loc) {
+        Player killer = getKiller(loc);
+
+        if (p.getName().equals(killer.getName())) {
+            Main.getPlugin().getServer().broadcastMessage(ChatColor.RED + p.getName() + " s'est tué(e) tout seul :/");
+        } else {
+            Main.getPlugin().getServer().broadcastMessage(ChatColor.RED + p.getName() + " a été tué(e) par "
+                    + ChatColor.BOLD + killer.getName());
+        }
+
+        p.setHealth(0);
+        removePlayer(p);
     }
 }

@@ -1,5 +1,6 @@
-package me.test.plugin.bomberman;
+package me.test.plugin.bomberman.game.helpers;
 
+import me.test.plugin.bomberman.Main;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -70,6 +71,8 @@ public class Items {
     }
 
     public static void pickUpItem(Material material, int amount, Player p) {
+        PlayerService.playSoundPickup(p);
+
         switch (material) {
             case FIREWORK_ROCKET:
                 Items.setPlayerBombPower(p, Items.getPlayerBombPower(p) + amount);

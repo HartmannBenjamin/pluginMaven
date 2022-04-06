@@ -1,5 +1,6 @@
-package me.test.plugin.bomberman;
+package me.test.plugin.bomberman.game.commands;
 
+import me.test.plugin.bomberman.game.BomberMan;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

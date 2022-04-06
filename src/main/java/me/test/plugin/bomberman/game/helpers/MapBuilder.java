@@ -1,11 +1,12 @@
-package me.test.plugin.bomberman;
+package me.test.plugin.bomberman.game.helpers;
 
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.World;
+import me.test.plugin.bomberman.Main;
+import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
+import org.bukkit.event.block.Action;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -42,7 +43,7 @@ public class MapBuilder {
                 container.get(new NamespacedKey(Main.getPlugin(), "b2Z"), PersistentDataType.INTEGER) : 0;
     }
 
-    boolean buildProcess() {
+    public boolean buildProcess() {
         if (b1Y != b2Y) {
             return false;
         }
@@ -51,15 +52,17 @@ public class MapBuilder {
 
         if (b1X < b2X) {
             for (int i = b1X; i <= b2X; i++) {
+                boolean condition1 = Math.abs(i - b1X) == 1 || Math.abs(i - b1X) == 2;
+                boolean conditionModulo1 = (Math.abs(i - b1X) % 2) == 0;
+
                 if (b1Z < b2Z) {
                     for (int j = b1Z; j <= b2Z; j++) {
                         if (i == b1X || i == b2X || j == b1Z || j == b2Z ||
-                                ((Math.abs(j - b1Z)%2) == 0) && ((Math.abs(i - b1X)%2) == 0)) {
+                                ((Math.abs(j - b1Z)%2) == 0) && conditionModulo1) {
                             world.getBlockAt(i, b1Y+1, j).setType(Material.BEDROCK);
                             world.getBlockAt(i, b1Y+2, j).setType(Material.BEDROCK);
                             world.getBlockAt(i, b1Y+3, j).setType(Material.BEDROCK);
                         } else {
-                            boolean condition1 = (Math.abs(i - b1X) == 1 || Math.abs(i - b1X) == 2);
                             boolean condition2 = (Math.abs(j - b1Z) == 1 || Math.abs(j - b1Z) == 2);
                             boolean condition3 = (i == b2X - 1 || i == b2X - 2);
                             boolean condition4 = (j == b2Z - 1 || j == b2Z - 2);
@@ -81,12 +84,11 @@ public class MapBuilder {
                 } else {
                     for (int j = b2Z; j <= b1Z; j++) {
                         if (i == b1X || i == b2X || j == b1Z || j == b2Z ||
-                                ((Math.abs(j - b2Z)%2) == 0) && ((Math.abs(i - b1X)%2) == 0)) {
+                                ((Math.abs(j - b2Z)%2) == 0) && conditionModulo1) {
                             world.getBlockAt(i, b1Y+1, j).setType(Material.BEDROCK);
                             world.getBlockAt(i, b1Y+2, j).setType(Material.BEDROCK);
                             world.getBlockAt(i, b1Y+3, j).setType(Material.BEDROCK);
                         } else {
-                            boolean condition1 = (Math.abs(i - b1X) == 1 || Math.abs(i - b1X) == 2);
                             boolean condition2 = (Math.abs(j - b2Z) == 1 || Math.abs(j - b2Z) == 2);
                             boolean condition3 = (i == b2X - 1 || i == b2X - 2);
                             boolean condition4 = (j == b1Z - 1 || j == b1Z - 2);
@@ -109,15 +111,17 @@ public class MapBuilder {
             }
         } else {
             for (int i = b2X; i <= b1X; i++) {
+                boolean conditionModulo1 = (Math.abs(i - b2X) % 2) == 0;
+
+                boolean condition1 = Math.abs(i - b2X) == 1 || Math.abs(i - b2X) == 2;
                 if (b1Z < b2Z) {
                     for (int j = b1Z; j <= b2Z; j++) {
                         if (i == b1X || i == b2X || j == b1Z || j == b2Z ||
-                                ((Math.abs(j - b1Z) % 2) == 0) && ((Math.abs(i - b2X) % 2) == 0)) {
+                                ((Math.abs(j - b1Z) % 2) == 0) && conditionModulo1) {
                             world.getBlockAt(i, b1Y + 1, j).setType(Material.BEDROCK);
                             world.getBlockAt(i, b1Y + 2, j).setType(Material.BEDROCK);
                             world.getBlockAt(i, b1Y + 3, j).setType(Material.BEDROCK);
                         } else {
-                            boolean condition1 = (Math.abs(i - b2X) == 1 || Math.abs(i - b2X) == 2);
                             boolean condition2 = (Math.abs(j - b1Z) == 1 || Math.abs(j - b1Z) == 2);
                             boolean condition3 = (i == b1X - 1 || i == b1X - 2);
                             boolean condition4 = (j == b2Z - 1 || j == b2Z - 2);
@@ -139,12 +143,11 @@ public class MapBuilder {
                 } else {
                     for (int j = b2Z; j <= b1Z; j++) {
                         if (i == b1X || i == b2X || j == b1Z || j == b2Z ||
-                                ((Math.abs(j - b2Z) % 2) == 0) && ((Math.abs(i - b2X) % 2) == 0)) {
+                                ((Math.abs(j - b2Z) % 2) == 0) && conditionModulo1) {
                             world.getBlockAt(i, b1Y + 1, j).setType(Material.BEDROCK);
                             world.getBlockAt(i, b1Y + 2, j).setType(Material.BEDROCK);
                             world.getBlockAt(i, b1Y + 3, j).setType(Material.BEDROCK);
                         } else {
-                            boolean condition1 = (Math.abs(i - b2X) == 1 || Math.abs(i - b2X) == 2);
                             boolean condition2 = (Math.abs(j - b2Z) == 1 || Math.abs(j - b2Z) == 2);
                             boolean condition3 = (i == b1X - 1 || i == b1X - 2);
                             boolean condition4 = (j == b1Z - 1 || j == b1Z - 2);
@@ -223,7 +226,7 @@ public class MapBuilder {
         }
     }
 
-    ArrayList<Location> getSpawnLocations() {
+    public ArrayList<Location> getSpawnLocations() {
         ArrayList<Location> spawnsLocation = new ArrayList<>();
 
         if (b1X < b2X) {
@@ -253,5 +256,77 @@ public class MapBuilder {
         }
 
         return spawnsLocation;
+    }
+
+    public void setMapDimension(Block clickedBlock, Action action, Player player) {
+            Location blockLoc = clickedBlock.getLocation();
+            PersistentDataContainer container = player.getWorld().getPersistentDataContainer();
+            boolean valid = true;
+
+            if (action == Action.RIGHT_CLICK_BLOCK) {
+                if (blockLoc.getBlockY() != b2Y) {
+                    player.sendMessage(ChatColor.RED + "Pas le même axe X");
+                    valid = false;
+                }
+
+                if ((Math.abs(blockLoc.getBlockX() - b2X) % 2 != 0) || (Math.abs(blockLoc.getBlockZ() - b2Z) % 2 != 0)) {
+                    player.sendMessage(ChatColor.RED + "Pas les bonnes dimensions");
+                    player.sendMessage(ChatColor.RED + "Pas les bonnes dimensions X:"
+                            + Math.abs(blockLoc.getBlockX() - b2X) % 2 + " Z: " + Math.abs(blockLoc.getBlockZ() - b2Z) % 2);
+                    valid = false;
+                }
+
+                if (valid) {
+                    player.sendMessage(ChatColor.GREEN + "Dimensions bonnes et bien enregistrées");
+                }
+
+                container.set(
+                        new NamespacedKey(Main.getPlugin(), "b1X"),
+                        PersistentDataType.INTEGER,
+                        blockLoc.getBlockX()
+                );
+                container.set(
+                        new NamespacedKey(Main.getPlugin(), "b1Y"),
+                        PersistentDataType.INTEGER,
+                        blockLoc.getBlockY()
+                );
+                container.set(
+                        new NamespacedKey(Main.getPlugin(), "b1Z"),
+                        PersistentDataType.INTEGER,
+                        blockLoc.getBlockZ()
+                );
+            } else if (action == Action.LEFT_CLICK_BLOCK) {
+                if (b1Y != blockLoc.getBlockY()) {
+                    player.sendMessage(ChatColor.RED + "Pas le même axe X");
+                    valid = false;
+                }
+
+                if (Math.abs(blockLoc.getBlockX() - b1X) % 2 != 0 || Math.abs(blockLoc.getBlockZ() - b1Z) % 2 != 0) {
+                    player.sendMessage(ChatColor.RED + "Pas les bonnes dimensions X:"
+                            + Math.abs(blockLoc.getBlockX() - b1X) % 2 + " Z: " + Math.abs(blockLoc.getBlockZ() - b1Z) % 2);
+                    valid = false;
+                }
+
+                if (valid) {
+                    player.sendMessage(ChatColor.GREEN + "Dimensions bonnes et bien enregistrées");
+                }
+
+                container.set(
+                        new NamespacedKey(Main.getPlugin(), "b2X"),
+                        PersistentDataType.INTEGER,
+                        blockLoc.getBlockX()
+                );
+                container.set(
+                        new NamespacedKey(Main.getPlugin(), "b2Y"),
+                        PersistentDataType.INTEGER,
+                        blockLoc.getBlockY()
+                );
+                container.set(
+                        new NamespacedKey(Main.getPlugin(), "b2Z"),
+                        PersistentDataType.INTEGER,
+                        blockLoc.getBlockZ()
+                );
+            }
+
     }
 }

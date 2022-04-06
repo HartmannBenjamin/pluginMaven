@@ -1,5 +1,7 @@
 package me.test.plugin.bomberman;
 
+import me.test.plugin.bomberman.game.commands.StartGameCommand;
+import me.test.plugin.bomberman.game.events.Event;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Main extends JavaPlugin {
